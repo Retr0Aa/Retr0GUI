@@ -1,0 +1,33 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+.vscode/
+
+# Rider
+.idea/
+*.sln.iml
+out/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+
+# User-specific files
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+# Rider cache
+.idea/shelf/
+.idea/workspace.xml
+
+# Mac
+.DS_Store
+
+# OS
+Thumbs.db
