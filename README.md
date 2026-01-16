@@ -1,4 +1,4 @@
-# Retr0GUI
+# Retr0GUI ![NuGet Version](https://img.shields.io/nuget/v/Retr0A.Retr0GUI)
 
 Retr0GUI is simple console-based C# library.
 
