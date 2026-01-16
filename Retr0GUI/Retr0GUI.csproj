@@ -4,6 +4,14 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <PackageId>Retr0A.Retr0GUI</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Retr0A</Authors>
+        <Description>Retr0GUI is basic GUI library for C# Console.</Description>
+        <RepositoryUrl>https://github.com/Retr0Aa/Retr0GUI</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
 </Project>
