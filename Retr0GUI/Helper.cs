@@ -1,5 +1,6 @@
 namespace Retr0GUI;
 
+[Obsolete]
 internal class Helper
 {
     public static string CovertConsoleKeyToString(ConsoleKey key)

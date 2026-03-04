@@ -1,6 +1,7 @@
 ﻿namespace Retr0GUI;
 
 // obsolete
+[Obsolete]
 internal class GUIManager
 {
     /// <summary>
