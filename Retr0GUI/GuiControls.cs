@@ -303,8 +303,8 @@ public static class GuiControls
                 }
                 else if (tableStyle == TableStyle.Alternating && r % 2 == 0)
                 {
-                    Console.BackgroundColor = ConsoleColor.White;
-                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.BackgroundColor = r == 0 ? ConsoleColor.White : ConsoleColor.DarkGray;
+                    Console.ForegroundColor = r == 0 ? ConsoleColor.Black :  ConsoleColor.White;
                 }
 
                 if (c != cols - 1)
