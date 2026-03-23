@@ -9,7 +9,9 @@ This example code can be found in [the example project](/ExampleProject/Program.
 
 ## API Reference
 
-- `GUIControls.cs` - This class contains all basic controls
+- `GUIControls` - This class contains all basic controls
+- `ControlStyle` - This class defines the style of most controls, like title color and underline
+- `TableStyle` - This class is specifically for the table render.
 
 ### Methods
 
@@ -48,4 +50,11 @@ public static void DrawTable(
         string[,] data,
         ControlStyle style,
         TableStyle tableStyle = TableStyle.None)
+```
+
+```csharp
+// Opens edit screen that can edit object by its properties
+public static void EditObject(
+        T obj,
+        ControlStyle style)
 ```

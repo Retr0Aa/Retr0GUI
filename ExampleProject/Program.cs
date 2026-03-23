@@ -1,10 +1,51 @@
 ﻿// See https://aka.ms/new-console-template for more information
+namespace ExampleProject;
 
 using Retr0GUI.Styles;
 
 public class Program
 {
     public static void Main(string[] args)
+    {
+        ShowMainMenu();
+    }
+    
+    static void ShowMainMenu()
+    {
+        string[] exampleOptions = new string[]
+        {
+            "Table",
+            "Horizontal Menu",
+            "Input Field",
+            "Object Edit",
+            "Exit"
+        };
+        
+        switch (Retr0GUI.GuiControls.VerticalMenu("Welcome to Retr0GUI! Select example with up/down arrow keys.", exampleOptions, ControlStyle.Default))
+        {
+            case 0:
+                ShowTableExample();
+                break;
+            case 1:
+                ShowHorizontalExample();
+                break;
+            case 2:
+                Retr0GUI.GuiControls.InputField("Example Input Field", "Enter text to test", ControlStyle.Default, false, true);
+        
+                ShowMainMenu();
+                break;
+            case 3:
+                ShowEditObjectExample();
+                break;
+            case 4:
+                Environment.Exit(0);
+                break;
+            default:
+                return;
+        }
+    }
+
+    static void ShowTableExample()
     {
         string[,] exampleData =
         {
@@ -18,29 +59,27 @@ public class Program
 
         Retr0GUI.GuiControls.DrawTable("Welcome to Retr0GUI! This is example spreadsheet:", exampleData, ControlStyle.Default, TableStyle.WithTopBar);
         
-        string val = Retr0GUI.GuiControls.InputField("Test", "Enter text to test", ControlStyle.Default, false, true);
-        
-        ShowVerticalExample(val);
-        
-        ShowHorizontalExample();
+        ShowMainMenu();
     }
 
-    static void ShowVerticalExample(string inputFieldOutput)
+    static void ShowEditObjectExample()
     {
-        int selectedOption = Retr0GUI.GuiControls.VerticalMenu($"Your input was: {inputFieldOutput}.Retr0GUI Vertical Menu Example", ["First option", "Second option", "Third option"], ControlStyle.Default);
-
-        switch (selectedOption)
+        Person p = new Person
         {
-            case 0:
-                Console.WriteLine("You selected first option.");
-                break;
-            case 1:
-                Console.WriteLine("You selected second option.");
-                break;
-            case 2:
-                Console.WriteLine("You selected third option.");
-                break;
-        }
+            Name = "Alex",
+            Age = 18,
+            IsStudent = true
+        };
+        
+        p = Retr0GUI.GuiControls.EditObject(p, ControlStyle.Default);
+
+        Console.Clear();
+        Console.WriteLine("Result: \n");
+        Console.WriteLine(p.ToString());
+
+        Console.ReadKey();
+        
+        ShowMainMenu();
     }
 
     static void ShowHorizontalExample()
@@ -55,5 +94,7 @@ public class Program
         {
             Console.WriteLine("You said No!");
         }
+        
+        ShowMainMenu();
     }
 }

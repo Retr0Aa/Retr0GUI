@@ -304,7 +304,7 @@ public static class GuiControls
                 else if (tableStyle == TableStyle.Alternating && r % 2 == 0)
                 {
                     Console.BackgroundColor = r == 0 ? ConsoleColor.White : ConsoleColor.DarkGray;
-                    Console.ForegroundColor = r == 0 ? ConsoleColor.Black :  ConsoleColor.White;
+                    Console.ForegroundColor = r == 0 ? ConsoleColor.Black : ConsoleColor.White;
                 }
 
                 if (c != cols - 1)
@@ -313,7 +313,7 @@ public static class GuiControls
                     Console.Write(" " + data[r, c].PadRight(colWidths[c]) + " ");
 
                 Console.ResetColor();
-                
+
                 if (c == cols - 1)
                     Console.Write('|');
             }
@@ -324,5 +324,254 @@ public static class GuiControls
 
         Console.WriteLine("\nPress any key to close the table...");
         Console.ReadKey();
+    }
+
+    /// <summary>
+    /// Opens an inline editable form in the console for all supported properties of an object.
+    /// Supports string, numeric types (int, double, float, decimal) and boolean fields.
+    /// Boolean fields display "No / Yes" with colored backgrounds during editing.
+    /// After editing, the method returns a new object with updated values if OK is chosen,
+    /// or the original object if Cancel is selected.
+    /// </summary>
+    /// <typeparam name="T">Type of the object to edit</typeparam>
+    /// <param name="obj">The object to edit</param>
+    /// <param name="style">Style to apply to the console form</param>
+    /// <returns>The edited object if OK is pressed, or the original object if Cancel is pressed</returns>
+    public static T EditObject<T>(T obj, ControlStyle style) where T : new()
+    {
+        var properties = typeof(T).GetProperties()
+            .Where(p => p.CanRead && p.CanWrite)
+            .ToList();
+
+        T temp = new T();
+        foreach (var p in properties)
+            p.SetValue(temp, p.GetValue(obj));
+
+        string[] values = properties
+            .Select(p => p.GetValue(temp)?.ToString() ?? "")
+            .ToArray();
+
+        string[] lastSaved = (string[])values.Clone(); // tracks last confirmed edit
+
+        int selected = 0;
+        bool editing = false;
+        int cursor = 0;
+
+        Console.CursorVisible = false;
+
+        while (true)
+        {
+            Console.Clear();
+
+            Console.ForegroundColor = style.TitleColor;
+            Console.WriteLine("Edit Object");
+            if (style.UnderlineTitle)
+                Console.WriteLine(new string('=', 11));
+            Console.WriteLine();
+            Console.ResetColor();
+
+            for (int i = 0; i < properties.Count + 2; i++)
+            {
+                if (i < properties.Count)
+                {
+                    var p = properties[i];
+                    bool isSelected = i == selected;
+
+                    Console.Write(p.Name + ": ");
+
+                    if (p.PropertyType == typeof(bool))
+                    {
+                        bool val = values[i] == "True";
+
+                        if (editing && isSelected)
+                        {
+                            // NO / YES toggle UI
+                            if (!val)
+                            {
+                                Console.BackgroundColor = ConsoleColor.Red;
+                                Console.ForegroundColor = ConsoleColor.Black;
+                                Console.Write(" No ");
+                                Console.ResetColor();
+                                Console.Write(" Yes ");
+                            }
+                            else
+                            {
+                                Console.Write(" No ");
+                                Console.BackgroundColor = ConsoleColor.Green;
+                                Console.ForegroundColor = ConsoleColor.Black;
+                                Console.Write(" Yes ");
+                                Console.ResetColor();
+                            }
+                        }
+                        else
+                        {
+                            if (isSelected)
+                            {
+                                Console.BackgroundColor = ConsoleColor.White;
+                                Console.ForegroundColor = ConsoleColor.Black;
+                            }
+
+                            // show last saved value, not original true/false
+                            Console.Write(values[i] == "True" ? "Yes" : "No");
+                            Console.ResetColor();
+                        }
+                    }
+                    else
+                    {
+                        string val = values[i];
+
+                        for (int j = 0; j <= val.Length; j++)
+                        {
+                            bool isCursor = editing && isSelected && j == cursor;
+
+                            char ch = j < val.Length ? val[j] : ' ';
+
+                            if (isSelected)
+                            {
+                                if (isCursor)
+                                {
+                                    Console.BackgroundColor = ConsoleColor.DarkGray;
+                                    Console.ForegroundColor = ConsoleColor.Black;
+                                }
+                                else
+                                {
+                                    Console.BackgroundColor = ConsoleColor.White;
+                                    Console.ForegroundColor = ConsoleColor.Black;
+                                }
+                            }
+
+                            Console.Write(ch);
+                            Console.ResetColor();
+                        }
+                    }
+
+                    Console.WriteLine();
+                }
+                else
+                {
+                    bool isSelected = i == selected;
+
+                    if (isSelected)
+                    {
+                        Console.BackgroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                    }
+
+                    Console.WriteLine(i == properties.Count ? "OK" : "Cancel");
+                    Console.ResetColor();
+                }
+            }
+
+            if (editing && properties[selected].PropertyType != typeof(bool))
+                Console.SetCursorPosition(properties[selected].Name.Length + 2 + cursor, 2 + selected);
+
+            var key = Console.ReadKey(true);
+
+            if (!editing)
+            {
+                if (key.Key == ConsoleKey.UpArrow)
+                    selected = selected == 0 ? properties.Count + 1 : selected - 1;
+
+                else if (key.Key == ConsoleKey.DownArrow)
+                    selected = selected == properties.Count + 1 ? 0 : selected + 1;
+
+                else if (key.Key == ConsoleKey.Enter)
+                {
+                    if (selected < properties.Count)
+                    {
+                        editing = true;
+                        cursor = 0;
+
+                        // clear only for text/number fields
+                        if (properties[selected].PropertyType != typeof(bool))
+                            values[selected] = "";
+                    }
+                    else if (selected == properties.Count) // OK
+                    {
+                        for (int i = 0; i < properties.Count; i++)
+                        {
+                            try
+                            {
+                                object val;
+
+                                if (properties[i].PropertyType == typeof(bool))
+                                    val = values[i] == "True";
+                                else
+                                    val = Convert.ChangeType(values[i], properties[i].PropertyType);
+
+                                properties[i].SetValue(temp, val);
+                            }
+                            catch
+                            {
+                            }
+                        }
+
+                        Console.CursorVisible = true;
+                        return temp;
+                    }
+                    else // Cancel
+                    {
+                        Console.CursorVisible = true;
+                        return obj;
+                    }
+                }
+            }
+            else
+            {
+                var type = properties[selected].PropertyType;
+
+                if (key.Key == ConsoleKey.Escape)
+                {
+                    // restore last saved value, not original
+                    values[selected] = lastSaved[selected];
+                    editing = false;
+                    continue;
+                }
+
+                if (type == typeof(bool))
+                {
+                    if (key.Key == ConsoleKey.LeftArrow || key.Key == ConsoleKey.RightArrow)
+                    {
+                        values[selected] = values[selected] == "True" ? "False" : "True";
+                    }
+                    else if (key.Key == ConsoleKey.Enter)
+                    {
+                        editing = false;
+                        lastSaved[selected] = values[selected]; // update last saved
+                    }
+                }
+                else
+                {
+                    if (key.Key == ConsoleKey.LeftArrow && cursor > 0)
+                        cursor--;
+
+                    else if (key.Key == ConsoleKey.RightArrow && cursor < values[selected].Length)
+                        cursor++;
+
+                    else if (key.Key == ConsoleKey.Backspace && cursor > 0)
+                    {
+                        values[selected] = values[selected].Remove(cursor - 1, 1);
+                        cursor--;
+                    }
+                    else if (key.Key == ConsoleKey.Enter)
+                    {
+                        editing = false;
+                        lastSaved[selected] = values[selected]; // update last saved
+                    }
+                    else if (!char.IsControl(key.KeyChar))
+                    {
+                        if (type == typeof(int) || type == typeof(double) ||
+                            type == typeof(float) || type == typeof(decimal))
+                        {
+                            if (!(char.IsDigit(key.KeyChar) || key.KeyChar == '.' || key.KeyChar == '-'))
+                                continue;
+                        }
+
+                        values[selected] = values[selected].Insert(cursor, key.KeyChar.ToString());
+                        cursor++;
+                    }
+                }
+            }
+        }
     }
 }
